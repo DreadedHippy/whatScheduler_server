@@ -3,6 +3,6 @@ import * as AuthController from '../controllers/authController.js'
 
 const router = express.Router();
 
-router.get("/", AuthController.ping)
+router.post("/", AuthController.login)
 
 export default router
