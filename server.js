@@ -1,35 +1,43 @@
-// import http from 'http';
-// import app, {eventEmitter} from './src/app.js';
-// import { Server } from 'socket.io';
-// const server = http.createServer(app);
-// const io = new Server(server);
-// const PORT = process.env.PORT || 3000;
-
-
-// io.on('connection', (socket) => {
-// 	console.log('a user connected');
-// });
-
-// server.listen(PORT)
-// console.log(`Server running on port ${PORT}`)
-import express from 'express';
 import http from 'http';
-const app = express();
+import app, {eventEmitter} from './src/app.js';
+import { Server } from 'socket.io';
 const server = http.createServer(app);
-import { Server } from 'socket.io'
-const io = new Server(server);
-
-app.get('/', (req, res) => {
-	res.send("Success");
+const io = new Server(server, {
+  cors: {
+    origin: ["http://localhost:8100"],
+    methods: ["GET", "POST", "PUT", "PATCH"],
+    allowedHeaders: ["my-custom-header"],
+    credentials: true
+  }
 });
+// const io = new Server(server, 
+//   cors: {
+//     origin: "https://example.com",
+//     methods: ["GET", "POST"],
+//     allowedHeaders: ["my-custom-header"],
+//     credentials: true
+//   });
+const PORT = process.env.PORT || 3000;
+
+eventEmitter.on("db_connected", () => {
+  server.listen(PORT, () => {
+    console.log('listening on *:3000');
+  });
+})
+
 
 io.on('connection', (socket) => {
+  socket.on("connect_client", () => {
+    console.log("Angular frontend connected")
+  })
   console.log('a user connected');
+
+  socket.on("disconnect", () => {
+    console.log("A user disconnected")
+  })
 });
 
-server.listen(3000, () => {
-  console.log('listening on *:3000');
-});
+
 
 // eventEmitter.on('db_connected', () => {
 // })

@@ -1,8 +1,8 @@
 //importing dependencies
-import wweb, { LocalAuth } from 'whatsapp-web.js'
+import wweb from 'whatsapp-web.js'
 import qrcode from 'qrcode-terminal';
 
-const {Client} = wweb
+const {Client, LocalAuth} = wweb
 
 let clients = {};
 
