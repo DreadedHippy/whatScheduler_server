@@ -3,6 +3,6 @@ import * as ClientController from '../controllers/clientController.js';
 
 const router = express.Router();
 
-router.post("/connect", ClientController.connectClient)
+router.get("/connect", ClientController.connectClient)
 
 export default router

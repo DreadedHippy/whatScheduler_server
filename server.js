@@ -1,6 +1,10 @@
+//Module Imports
 import http from 'http';
-import app, {eventEmitter} from './src/app.js';
 import { Server } from 'socket.io';
+
+//File imports
+import app, {eventEmitter} from './src/app.js';
+import * as ClientController from './src/controllers/clientController.js'
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -36,6 +40,8 @@ io.on('connection', (socket) => {
     console.log("A user disconnected")
   })
 });
+
+ClientController.connectSocket(io)
 
 
 
