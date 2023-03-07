@@ -7,48 +7,75 @@ const {Client, LocalAuth} = wweb
 
 let clients = {};
 
-export async function connectClient(req, res){
-	const alphaRegex = /[^A-Za-z0-9]+/
-	const clientID = req.query.clientID.split(alphaRegex).join("")
-
-	if(!clientID){
-		res.status(400).json({
-			message: "No client id found",
-			data: {connected: false},
-			code: "400-connectClient"
-		})
-		return
-	}
-
-	clients[clientID] = new Client({
-		authStrategy: new LocalAuth({
-			clientId: clientID
-		})
-	})
-
-	clients[clientID].on("qr", qr => {
-		console.log(qr)
-		innerSocket.emit("qrcode", qr)
-	})
-
-	clients[clientID].on("ready", () => {
-		console.log(ready)
-		res.status(200).json({
-			message: "Client ready",
-			data: {},
-			code: "200-connectClient"
-		})
-	})
-
-	clients[clientID].initialize()
-}
-
 export function connectSocket(io){
 	io.on('connection', (socket) => {
-		innerSocket = socket;
-		innerSocket.on("connect_client", () => {
+		//Connect client function
+		socket.on("connect_client", (id) => {
 			console.log("CLIENT_CONTROLLER: Angular frontend connected")
+			const alphaRegex = /[^A-Za-z0-9]+/
+			const clientID = id.split(alphaRegex).join("")
+
+			if(!clientID){
+				socket.emit("invalid_id")
+				return
+			}
+
+			if(clients[clientID]){
+				if(clients[clientID].info){					
+					socket.emit("client_ready");
+					return
+				}
+			}
+		
+			clients[clientID] = new Client({
+				authStrategy: new LocalAuth({
+					clientId: clientID
+				})
+			})
+		
+			clients[clientID].on("qr", qr => {
+				console.log(qr)
+				socket.emit("qrcode", qr)
+			})
+		
+			clients[clientID].on("ready", () => {
+				console.log("Client ready")
+				console.log("Client: ", clients[clientID])
+				console.log("Client info: ", clients[clientID].info)
+				socket.emit("client_ready")
+			})
+		
+			clients[clientID].initialize()
+			console.log("Client info: ", clients[clientID].info)
 		});
-		innerSocket.emit("qrcode", "TEST")
+
+		innerSocket = socket;
 	});
 }
+
+export async function getClientChats(req, res){
+	try{
+		const email = req.query.email;
+		const alphaRegex = /[^A-Za-z0-9]+/
+		const clientID = email.split(alphaRegex).join("")
+
+		clients[clientID].getChats().then((result) => {
+			console.log(result[0]);
+			res.status(200).json({
+				message: "Chats retrieved",
+				data: {chats: result},
+				code: "200-getClientChats"
+			})
+		})
+	} catch(error){
+		console.log(error)
+		res.status(500).json({
+			message: "Something went wrong",
+			data: {},
+			code: "500-getClientChats"
+		})
+	}	
+}
+
+// const testClient = new Client()
+// testClient.

@@ -6,10 +6,15 @@ const task = new mongoose.Schema({
 	date: Date
 })
 
+const schedule = new mongoose.Schema({
+	date: Date
+})
+
 const user = new mongoose.Schema({
 	email: String,
 	password: String,
-	tasks: [task]
+	schedules: [schedule],
+	tasks: [task],
 })
 
 const User = mongoose.model('User', user)
