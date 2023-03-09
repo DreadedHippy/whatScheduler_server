@@ -1,18 +1,18 @@
 //importing dependencies
 import wweb from 'whatsapp-web.js'
 import qrcode from 'qrcode-terminal';
-let innerSocket;
+import * as ScheduleController from './scheduleController.js';
 
 const {Client, LocalAuth} = wweb
 
 let clients = {};
+const alphaRegex = /[^A-Za-z0-9]+/ //Regex pattern to find all that is not alphanumeric
 
 export function connectSocket(io){
 	io.on('connection', (socket) => {
 		//Connect client function
 		socket.on("connect_client", (id) => {
-			console.log("CLIENT_CONTROLLER: Angular frontend connected")
-			const alphaRegex = /[^A-Za-z0-9]+/
+			// console.log("CLIENT_CONTROLLER: Angular frontend connected")
 			const clientID = id.split(alphaRegex).join("")
 
 			if(!clientID){
@@ -34,33 +34,24 @@ export function connectSocket(io){
 			})
 		
 			clients[clientID].on("qr", qr => {
-				console.log(qr)
 				socket.emit("qrcode", qr)
 			})
 		
 			clients[clientID].on("ready", () => {
-				console.log("Client ready")
-				console.log("Client: ", clients[clientID])
-				console.log("Client info: ", clients[clientID].info)
 				socket.emit("client_ready")
 			})
-		
+		 
 			clients[clientID].initialize()
-			console.log("Client info: ", clients[clientID].info)
 		});
-
-		innerSocket = socket;
 	});
 }
 
 export async function getClientChats(req, res){
 	try{
 		const email = req.query.email;
-		const alphaRegex = /[^A-Za-z0-9]+/
 		const clientID = email.split(alphaRegex).join("")
 
 		clients[clientID].getChats().then((result) => {
-			console.log(result[0]);
 			res.status(200).json({
 				message: "Chats retrieved",
 				data: {chats: result},
@@ -77,5 +68,89 @@ export async function getClientChats(req, res){
 	}	
 }
 
+export async function sendMessage(req, res){
+
+	try{
+		const email = req.query.email
+		const clientID = email.split(alphaRegex).join("")
+
+		//If client disconnected for some reason
+		if(!clients[clientID]){
+			res.status(400).json({
+				message: "Message cannot be sent, try reconnecting",
+				data: {sent: false},
+				code: "400-sendMessage"
+			})
+			return
+		}
+		console.log(req.body)
+
+		const chatIDs = req.body.chatIDs
+		const message = req.body.message;
+		const isInstant = req.body.isInstant;
+		const date = req.body.date
+
+		// console.log(req.body) //Debugging
+
+		if(isInstant){
+			for(let chatID of chatIDs){
+				await clients[clientID].sendMessage(chatID, message, {sendSeen: false})
+			}
+			res.status(200).json({
+				message: "Message sent!",
+				data: {sent:true},
+				code: "200-sendMessage"
+			})
+			return
+		}
+
+		if(!isInstant){
+			ScheduleController.setSchedule({clientID, chatIDs, message, date})
+			res.status(200).json({
+				message: "Still setting things up",
+				data: {sent:true},
+				code: "200-sendMessage-alt"
+			})	
+		}
+		
+	} catch(error){
+		console.log(error);
+		res.status(500).json({
+			message: "Something went wrong...",
+			data: {sent: false},
+			code: "500-sendMessage"
+		})
+	}
+}
+
+ScheduleController.eventEmitter.on("send_message", (info) => {
+	sendScheduled(info.clientID, info.chatIDs, info.message, info.scheduleID, info.email)
+})
+
+export async function sendScheduled(clientID, chatIDs, message, scheduleID, email){
+	try{
+		if(!clients[clientID]){
+			console.log("invalid client")
+			return
+		}
+		if(clients[clientID]){
+
+			if(!clients[clientID].info){
+				console.log("Invalid client session")
+				return
+			}
+			for( const chatID of chatIDs){
+				clients[clientID].sendMessage(chatID, message, {sendSeen: false}).then( result => {
+					ScheduleController.eventEmitter.emit("message_sent", {scheduleID, email})
+				})
+			}
+		}
+	} catch(error) {
+		console.log(error)
+	}
+}
+
+
+
 // const testClient = new Client()
-// testClient.
+// testClient.sendMessage()

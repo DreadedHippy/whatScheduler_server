@@ -12,10 +12,10 @@ export async function login(req, res, next){
 
 	//TODO: Add signup logic separately
 
-	User.findOne({email: email}).then( result => {
+	User.findOne({email: email}).then( foundUser => {
 		console.log("pinged")
 		//If the user does not exist
-		if(!result){
+		if(!foundUser){
 			bcrypt.hash(req.body.password, 10).then(hash => {
 				const user = new User({ //create new user
 					email: email,
@@ -51,19 +51,21 @@ export async function login(req, res, next){
 		}
 
 		//If the User exists
-		const token = jwt.sign({email, id: result._id}, process.env.JWT_SECRET, {expiresIn: '1h'}) //generate auth token
-		bcrypt.compare(req.body.password, result.password)
-		.then(result => {
-			res.status(200).json({
-				message: "Authenticated!",
-				data: {
-					saved: false,
-					user: result,
-					token, 
-					expiresIn: 3600 //1 hour to seconds
-				},
-				code: "200-login"
-			})
+		const token = jwt.sign({email, id: foundUser._id}, process.env.JWT_SECRET, {expiresIn: '1h'}) //generate auth token
+		bcrypt.compare(req.body.password, foundUser.password)
+		.then(outcome => {
+			if(outcome){
+				res.status(200).json({
+					message: "Authenticated!",
+					data: {
+						saved: false,
+						user: foundUser,
+						token, 
+						expiresIn: 3600 //1 hour to seconds
+					},
+					code: "200-login"
+				})
+			}
 		}).catch(err => {
 			res.status(401).json({
 				message: "Invalid credentials!",
