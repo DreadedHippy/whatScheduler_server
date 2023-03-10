@@ -51,11 +51,10 @@ export async function setSchedule(req, res){
 		User.findOne({email: email}).then( async(foundUser) => { //find a user in the db
 			// console.log(foundUser) //debug: print out the found user
 			const newSchedule = await foundUser.schedules.create(schedule) //Create a new schedule
-
 			const scheduleID = newSchedule._id //? Get the id of the new schedule
 
-			//Add the new schedule to the "schedules" object using the ID as reference
-			schedules[scheduleID] = nodeSchedule.scheduleJob(schedule.date, function(){
+			//Add the new schedule to the "schedules" object using the user email and schedule ID as reference
+			schedules[email+"|"+scheduleID] = nodeSchedule.scheduleJob(schedule.date, function(){
 				eventEmitter.emit("send_message", {
 					chatIDs,
 					clientID,
@@ -78,7 +77,6 @@ export async function setSchedule(req, res){
 				})
 			})
 		})
-		// await user.schedules.push(schedule)
 	} catch(error){
 		console.log(error)
 		res.status(500).json({
@@ -89,9 +87,8 @@ export async function setSchedule(req, res){
 	}
 }
 
-eventEmitter.on("message_sent", async (info) => {
+eventEmitter.on("message_sent", async (info) => { //Update schedule state to 'sent' in the db
 	try {
-
 		User.findOneAndUpdate(
 			{email: info.email, "schedules._id": info.scheduleID},
 			{"schedules.$.status" : "sent"}	
@@ -102,7 +99,21 @@ eventEmitter.on("message_sent", async (info) => {
 	} catch(error){
 		console.log(error)
 	}
+})
 
+eventEmitter.on("expire_schedule", (info) => {
+	try{
+		User.findOneAndUpdate(
+			{email: info.email, "schedules._id": info.scheduleID},
+			{"schedules.$.status" : "expired"}	
+		).then( result => {
+			console.log(result)
+			console.log("update: expired")
+		}).catch(error => {console.log(error)})
+
+	} catch(error){
+		console.log(error)
+	}
 })
 
 export {eventEmitter}

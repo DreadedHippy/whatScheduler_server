@@ -131,6 +131,7 @@ export async function sendScheduled(clientID, chatIDs, message, scheduleID, emai
 	try{
 		if(!clients[clientID]){
 			console.log("invalid client")
+			ScheduleController.eventEmitter.emit("expire_schedule", {email, scheduleID})
 			return
 		}
 		if(clients[clientID]){
