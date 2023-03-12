@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="jTFRK-bFNJTvvd0git7X" name="Page-1">
-        <mxGraphModel dx="448" dy="307" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="908" dy="440" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -19,8 +19,10 @@
                 <mxCell id="13" style="edgeStyle=none;html=1;" parent="1" source="7" target="12" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="36" style="edgeStyle=none;html=1;" parent="1" source="7" target="35" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
+                <mxCell id="36" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="7" target="43" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="210" y="400" as="targetPoint"/>
+                    </mxGeometry>
                 </mxCell>
                 <mxCell id="7" value="Does user have a client on the server?" style="rhombus;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="150" y="210" width="120" height="120" as="geometry"/>
@@ -29,7 +31,7 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="9" value="Initialize Client" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="150" y="530" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="150" y="580" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="11" value="Yes" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
                     <mxGeometry x="210" y="345" width="40" height="30" as="geometry"/>
@@ -41,30 +43,34 @@
                     <mxGeometry x="410" y="240" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="14" value="Send &quot;OK&quot; response to the user" style="whiteSpace=wrap;html=1;rounded=0;" parent="1" vertex="1">
-                    <mxGeometry x="150" y="860" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="150" y="910" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="21" style="edgeStyle=none;html=1;" parent="1" source="19" target="14" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
+                <mxCell id="21" style="edgeStyle=none;html=1;" parent="1" source="19" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="210" y="910" as="targetPoint"/>
+                    </mxGeometry>
                 </mxCell>
-                <mxCell id="25" value="" style="edgeStyle=none;html=1;" parent="1" source="19" target="24" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
+                <mxCell id="25" value="" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="19" target="24" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="310" y="750" as="targetPoint"/>
+                    </mxGeometry>
                 </mxCell>
-                <mxCell id="19" value="Is client initialized?" style="rhombus;whiteSpace=wrap;html=1;rounded=0;" parent="1" vertex="1">
-                    <mxGeometry x="170" y="660" width="80" height="80" as="geometry"/>
+                <mxCell id="19" value="Initialization successful?" style="rhombus;whiteSpace=wrap;html=1;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="150" y="690" width="120" height="130" as="geometry"/>
                 </mxCell>
                 <mxCell id="23" value="Yes" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="210" y="790" width="40" height="30" as="geometry"/>
+                    <mxGeometry x="210" y="840" width="40" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="24" value="Send error response" style="whiteSpace=wrap;html=1;rounded=0;" parent="1" vertex="1">
-                    <mxGeometry x="310" y="670" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="405" y="725" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="26" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="250" y="670" width="40" height="30" as="geometry"/>
+                    <mxGeometry x="310" y="720" width="40" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="33" style="edgeStyle=none;html=1;" parent="1" source="27" target="32" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="37" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="27" target="35" edge="1">
+                <mxCell id="37" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="27" target="35" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="27" value="User scan QR Code?" style="rhombus;whiteSpace=wrap;html=1;" parent="1" vertex="1">
@@ -74,7 +80,7 @@
                     <mxGeometry x="300" y="235" width="40" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="31" value="Yes" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="320" y="400" width="40" height="30" as="geometry"/>
+                    <mxGeometry x="485" y="510" width="40" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="32" value="Do Nothing" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="600" y="400" width="120" height="60" as="geometry"/>
@@ -82,11 +88,34 @@
                 <mxCell id="34" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
                     <mxGeometry x="530" y="405" width="40" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="39" style="edgeStyle=none;html=1;" parent="1" source="35" target="9" edge="1">
+                <mxCell id="39" style="edgeStyle=none;html=1;" parent="1" target="9" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="210" y="510" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="44" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="35" target="9">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="35" value="Store client with id inside object on the server" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="150" y="400" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="405" y="580" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="42" value="No" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="530" width="40" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="45" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="43" target="14">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="60" y="940" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="60" y="450"/>
+                            <mxPoint x="60" y="940"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="43" value="Is client initialized?" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="150" y="390" width="120" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="46" value="Yes" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="80" y="405" width="40" height="30" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>

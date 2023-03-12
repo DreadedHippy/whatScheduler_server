@@ -21,6 +21,7 @@ export function getSchedules(req, res){
 				data: {schedules: user.schedules},
 				code: "200-getSchedules"
 			})
+			checkSchedules(payloadEmail)
 		})
 	}
 	catch(error){
@@ -84,6 +85,50 @@ export async function setSchedule(req, res){
 			data: {scheduled: false},
 			code: "500-setSchedule"
 		})
+	}
+}
+
+export function retrieveSchedules(email){
+	try{
+		User.findOne({email: email}).then(foundUser => { //get user from db
+			for(const schedule of foundUser.schedules){
+				if(schedule.status == "pending"){
+					const now = new Date();
+					const scheduleDate = new Date(schedule.date)
+					//compare the current date to the scheduled date and update as necessary
+					if(now.getTime() > scheduleDate.getTime()){
+						schedule.status = "expired"
+						continue
+					}
+					schedules[email+"|"+schedule._id] ||= nodeSchedule.scheduleJob(schedule.date, function(){
+						eventEmitter.emit("send_message", {
+							chatIDs: schedule.chatIDs,
+							clientID: schedule.clientId,
+							message: schedule.message,
+							date: schedule.date,
+							scheduleID: schedule._id,
+							email: email
+						})
+					})
+				}
+			}
+			schedules[email] ||= email //To bypass "checkSchedules" even when no pending schedules
+			foundUser.save().then(() => {
+				console.log("Schedules updated and retrieved");
+				// console.log(schedules) //Debug
+				// console.log(Object.keys(schedules)) //Debug
+			})
+		})
+	}catch(err){
+		console.log(error)
+	}
+}
+
+//This checks if the schedules for a given user has been retrieved from th db
+function checkSchedules(email){
+	const scheduleRefs = Object.keys(schedules);
+	if(!scheduleRefs.some(elem => elem.startsWith(email))){
+		retrieveSchedules(email)
 	}
 }
 

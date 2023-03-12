@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';;
 import User from '../models/user.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import * as ScheduleController from '../controllers/scheduleController.js'
 dotenv.config()
 
 export async function login(req, res, next){
@@ -37,6 +38,7 @@ export async function login(req, res, next){
 						},
 						code: "201-login"
 					})
+					ScheduleController.retrieveSchedules(email) //retrieve schedules from db
 				})
 				.catch(error => { //user not saved
 					console.error("An error has occured: " + error);
@@ -53,8 +55,8 @@ export async function login(req, res, next){
 		//If the User exists
 		const token = jwt.sign({email, id: foundUser._id}, process.env.JWT_SECRET, {expiresIn: '1h'}) //generate auth token
 		bcrypt.compare(req.body.password, foundUser.password)
-		.then(outcome => {
-			if(outcome){
+		.then(passwordMatches => {
+			if(passwordMatches){
 				res.status(200).json({
 					message: "Authenticated!",
 					data: {
@@ -65,6 +67,7 @@ export async function login(req, res, next){
 					},
 					code: "200-login"
 				})
+				ScheduleController.retrieveSchedules(email) //retrieve schedules from db
 			}
 		}).catch(err => {
 			res.status(401).json({

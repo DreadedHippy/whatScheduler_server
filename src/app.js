@@ -32,7 +32,7 @@ app.use(bodyParser.urlencoded({ extended: false}));
 // Mongoose connection
 mongoose.set('strictQuery', false);
 mongoose.connect(process.env.MONGO_DB_URI).then(async () => {
-    console.log("connected")
+    console.log("Connected to MongoDB")
     eventEmitter.emit('db_connected')
 });
 
