@@ -14,13 +14,7 @@ const io = new Server(server, {
     credentials: true
   }
 });
-// const io = new Server(server, 
-//   cors: {
-//     origin: "https://example.com",
-//     methods: ["GET", "POST"],
-//     allowedHeaders: ["my-custom-header"],
-//     credentials: true
-//   });
+
 const PORT = process.env.PORT || 3000;
 
 eventEmitter.on("db_connected", () => {
@@ -42,8 +36,6 @@ io.on('connection', (socket) => {
 });
 
 ClientController.connectSocket(io)
-
-
 
 // eventEmitter.on('db_connected', () => {
 // })

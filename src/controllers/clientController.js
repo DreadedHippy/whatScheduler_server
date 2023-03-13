@@ -2,6 +2,7 @@
 import wweb from 'whatsapp-web.js'
 import qrcode from 'qrcode-terminal';
 import * as ScheduleController from './scheduleController.js';
+import { cacheData, deleteCachedData } from '../middleware/redis-cache.js';
 
 const {Client, LocalAuth} = wweb
 
@@ -20,8 +21,8 @@ export function connectSocket(io){
 				return
 			}
 
-			if(clients[clientID]){
-				if(clients[clientID].info){					
+			if(clients[clientID]){ //if the client is a valid client
+				if(clients[clientID].info){  //If the client is connected
 					socket.emit("client_ready");
 					return
 				}
@@ -57,6 +58,7 @@ export async function getClientChats(req, res){
 				data: {chats: result},
 				code: "200-getClientChats"
 			})
+			cacheData(email+"-chats", result, 1200)
 		})
 	} catch(error){
 		console.log(error)
@@ -151,7 +153,37 @@ export async function sendScheduled(clientID, chatIDs, message, scheduleID, emai
 	}
 }
 
+export async function disconnectClient(req, res){
+	try{
+		const email = req.query.email;
+		const clientID = email.split(alphaRegex).join("")
+		if(clients[clientID]){
+			console.log("ID is valid")
+			if(clients[clientID].info){
+				console.log("Client is running")
+				clients[clientID].destroy().then(() => {
+					res.status(200).json({
+						message: "Client disconnected successfully",
+						data: {},
+						code: "200-disconnectClient"
+					})
+					clients[clientID] = undefined	//Set client to undefined to bypass initialization guard
+				}).catch( error => console.log(error))
+			}
+		}
+		deleteCachedData(email)
+	} catch(error){
+		console.log(error)
+		res.status(500).json({
+			message: "Something went wrong",
+			data: {},
+			code: "500-disconnectClient"
+		})
+	}	
+
+}
+
 
 
 // const testClient = new Client()
-// testClient.sendMessage()
+// testClient.destroy()

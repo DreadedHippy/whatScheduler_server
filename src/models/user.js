@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const task = new mongoose.Schema({
+	name: String,
 	cronJob: String,
 	isRunning: Boolean,
 	date: Date

@@ -2,6 +2,7 @@ import User from "../models/user.js";
 import jwt from "jsonwebtoken"
 import nodeSchedule from "node-schedule";
 import EventEmitter from 'events';
+import { cacheData } from "../middleware/redis-cache.js";
 const eventEmitter = new EventEmitter();
 
 let schedules = {};
@@ -21,7 +22,14 @@ export function getSchedules(req, res){
 				data: {schedules: user.schedules},
 				code: "200-getSchedules"
 			})
+			cacheData(payloadEmail+"-schedules", user.schedules, 60)
 			checkSchedules(payloadEmail)
+		}).catch(error => {
+			res.status(500).json({
+				message: "An error has occured!",
+				data: {error},
+				code: "500-getSchedules"
+			})
 		})
 	}
 	catch(error){
@@ -112,7 +120,7 @@ export function retrieveSchedules(email){
 					})
 				}
 			}
-			schedules[email] ||= email //To bypass "checkSchedules" even when no pending schedules
+			schedules[email] ||= email //?To bypass "checkSchedules" even when no pending schedules
 			foundUser.save().then(() => {
 				console.log("Schedules updated and retrieved");
 				// console.log(schedules) //Debug
