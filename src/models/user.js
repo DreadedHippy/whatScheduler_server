@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+import mongooseUniqueValidator from "mongoose-unique-validator";
 const task = new mongoose.Schema({
 	name: String,
 	cronJob: String,
@@ -8,7 +8,7 @@ const task = new mongoose.Schema({
 })
 
 const schedule = new mongoose.Schema({
-	clientID: String,
+	clientID: {type: String, required: true, unique: true},
 	chatIDs: [],
 	message: String,
 	status: String,
@@ -16,11 +16,13 @@ const schedule = new mongoose.Schema({
 })
 
 const user = new mongoose.Schema({
-	email: String,
-	password: String,
+	email: {type: String, required: true, unique: true},
+	password: {type: String, required: true, unique: true},
 	schedules: [schedule],
 	tasks: [task],
 })
+
+user.plugin(mongooseUniqueValidator)
 
 const User = mongoose.model('User', user)
 
