@@ -8,7 +8,7 @@ const task = new mongoose.Schema({
 })
 
 const schedule = new mongoose.Schema({
-	clientID: {type: String, required: true, unique: true},
+	clientID: {type:String},
 	chatIDs: [],
 	message: String,
 	status: String,

@@ -17,7 +17,7 @@ export async function login(req, res, next){
 		console.log("pinged")
 		//If the user does not exist
 		if(!foundUser){
-			bcrypt.hash(req.body.password, 10).then(hash => {
+			bcrypt.hash(password, 10).then(hash => {
 				const user = new User({ //create new user
 					email: email,
 					password: hash,
