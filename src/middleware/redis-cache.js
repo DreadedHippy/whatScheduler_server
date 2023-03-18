@@ -72,10 +72,33 @@ export async function cacheData(key, value, validity = 180){
 export async function deleteCachedData(email){
 	const key1 = email+"-chats";
 	const key2 = email+"-schedules"
+	const key3 = email+"-tasks"
 	try{
 		await redisClient.del(key1)
 		await redisClient.del(key2)
+		await redisClient.del(key3)
 	}catch(error){
-		console.log("Redis delete error", error)
+		console.log("Redis delete error: ", error)
 	}
+}
+
+export async function cachedTasks(req, res, next){
+	try{
+		const email = req.query.email;
+		const cachedData = await redisClient.get(email+"-tasks")
+
+		if(cachedData){
+			res.status(200).json({
+				message: "Chats retrieved",
+				data: {chats: JSON.parse(cachedData)},
+				code: "200-getClientTasks"
+			})
+			return
+		}
+		next()
+	}catch(err){
+		console.log(err)
+		next()
+	}
+
 }

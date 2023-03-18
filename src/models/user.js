@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
 import mongooseUniqueValidator from "mongoose-unique-validator";
 const task = new mongoose.Schema({
-	name: String,
-	cronJob: String,
+	name: {type: String, required: true},
+	message: {type: String, required: true},
+	chatIDs: [],
+	cronJob: {type: String, required: true},
 	isRunning: Boolean,
-	date: Date
+	clientID: {type: String, required: true}
 })
 
 const schedule = new mongoose.Schema({

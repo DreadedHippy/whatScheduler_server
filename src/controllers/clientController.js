@@ -2,6 +2,7 @@
 import wweb from 'whatsapp-web.js'
 import qrcode from 'qrcode-terminal';
 import * as ScheduleController from './scheduleController.js';
+import * as TaskController from './taskController.js';
 import { cacheData, deleteCachedData } from '../middleware/redis-cache.js';
 
 const {Client, LocalAuth} = wweb
@@ -125,8 +126,13 @@ export async function sendMessage(req, res){
 	}
 }
 
+//*Listening for events from other controllers
 ScheduleController.eventEmitter.on("send_message", (info) => {
 	sendScheduled(info.clientID, info.chatIDs, info.message, info.scheduleID, info.email)
+})
+
+TaskController.eventEmitter.on("send_message", (info) => {
+	sendRecurring(info.clientID, info.chatIDs, info.message, info.taskID, info.email)
 })
 
 export async function sendScheduled(clientID, chatIDs, message, scheduleID, email){
@@ -140,6 +146,7 @@ export async function sendScheduled(clientID, chatIDs, message, scheduleID, emai
 
 			if(!clients[clientID].info){
 				console.log("Invalid client session")
+				ScheduleController.eventEmitter.emit("expire_schedule", {email, scheduleID})
 				return
 			}
 			for( const chatID of chatIDs){
@@ -152,6 +159,30 @@ export async function sendScheduled(clientID, chatIDs, message, scheduleID, emai
 		console.log(error)
 	}
 }
+
+export async function sendRecurring(clientID, chatIDs, message, taskID, email){
+	try{
+		if(!clients[clientID]){
+			console.log("invalid client")
+			TaskController.eventEmitter.emit("expire_schedule", {email, taskID})
+			return
+		}
+		if(clients[clientID]){
+			if(!clients[clientID].info){
+				console.log("Invalid client session")
+				return
+			}
+			for( const chatID of chatIDs){
+				clients[clientID].sendMessage(chatID, message, {sendSeen: false}).then( result => {
+					TaskController.eventEmitter.emit("message_sent", {email, taskID})
+				})
+			}
+		}
+	} catch(error) {
+		console.log(error)
+	}	
+}
+
 
 export async function disconnectClient(req, res){
 	try{

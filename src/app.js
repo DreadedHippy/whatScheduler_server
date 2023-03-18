@@ -15,6 +15,7 @@ import bodyParser from 'body-parser';
 import authRoutes from './routes/authRoutes.js'
 import clientRoutes from './routes/clientRoutes.js'
 import scheduleRoutes from './routes/scheduleRoutes.js'
+import taskRoutes from './routes/taskRoutes.js'
 
 //Necessary initializations
 dotenv.config();
@@ -41,6 +42,7 @@ let clients = {}
 app.use("/api/auth", authRoutes)
 app.use("/api/client", clientRoutes)
 app.use("/api/schedules", scheduleRoutes)
+app.use("/api/tasks", taskRoutes)
 
 app.get("/", (req, res) => {
     res.sendFile(__dirname + '/index.html');
