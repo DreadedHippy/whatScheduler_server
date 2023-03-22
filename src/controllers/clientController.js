@@ -8,13 +8,13 @@ import { cacheData, deleteCachedData } from '../middleware/redis-cache.js';
 const {Client, LocalAuth} = wweb
 
 let clients = {};
+let clientMap = new Map()
 const alphaRegex = /[^A-Za-z0-9]+/ //Regex pattern to find all that is not alphanumeric
 
 export function connectSocket(io){
 	io.on('connection', (socket) => {
 		//Connect client function
 		socket.on("connect_client", (id) => {
-			// console.log("CLIENT_CONTROLLER: Angular frontend connected")
 			const clientID = id.split(alphaRegex).join("")
 
 			if(!clientID){
@@ -22,28 +22,34 @@ export function connectSocket(io){
 				return
 			}
 
-			if(clients[clientID]){ //if the client is a valid client
-				if(clients[clientID].info){  //If the client is connected
-					socket.emit("client_ready");
-					return
-				}
+			//If the client is a valid client and the client is connected
+			if(clientMap.has(clientID) && clientMap.get(clientID).info){
+				socket.emit("client_ready");
+				return
 			}
 		
-			clients[clientID] = new Client({
+			let client = new Client({
 				authStrategy: new LocalAuth({
 					clientId: clientID
 				})
 			})
+
+			clientMap.set(clientID, client)
 		
-			clients[clientID].on("qr", qr => {
+			clientMap.get(clientID).on("qr", qr => {
 				socket.emit("qrcode", qr)
 			})
+
+			clientMap.get(clientID).on("authenticated", (session) => {
+				socket.emit("authenticated")
+				console.log("CLIENT_CONTROLLER: Client authenticated")
+			})
 		
-			clients[clientID].on("ready", () => {
+			clientMap.get(clientID).on("ready", () => {
 				socket.emit("client_ready")
 			})
 		 
-			clients[clientID].initialize()
+			clientMap.get(clientID).initialize()
 		});
 	});
 }
@@ -53,7 +59,7 @@ export async function getClientChats(req, res){
 		const email = req.query.email;
 		const clientID = email.split(alphaRegex).join("")
 
-		clients[clientID].getChats().then((result) => {
+		clientMap.get(clientID).getChats().then((result) => {
 			res.status(200).json({
 				message: "Chats retrieved",
 				data: {chats: result},
@@ -78,7 +84,7 @@ export async function sendMessage(req, res){
 		const clientID = email.split(alphaRegex).join("")
 
 		//If client disconnected for some reason
-		if(!clients[clientID]){
+		if(!clientMap.has(clientID)){
 			res.status(400).json({
 				message: "Message cannot be sent, try reconnecting",
 				data: {sent: false},
@@ -97,7 +103,7 @@ export async function sendMessage(req, res){
 
 		if(isInstant){
 			for(let chatID of chatIDs){
-				await clients[clientID].sendMessage(chatID, message, {sendSeen: false})
+				await clientMap.get(clientID).sendMessage(chatID, message, {sendSeen: false})
 			}
 			res.status(200).json({
 				message: "Message sent!",
@@ -137,20 +143,20 @@ TaskController.eventEmitter.on("send_message", (info) => {
 
 export async function sendScheduled(clientID, chatIDs, message, scheduleID, email){
 	try{
-		if(!clients[clientID]){
+		if(!clientMap.has(clientID)){
 			console.log("invalid client")
 			ScheduleController.eventEmitter.emit("expire_schedule", {email, scheduleID})
 			return
 		}
-		if(clients[clientID]){
+		if(clientMap.has(clientID)){
 
-			if(!clients[clientID].info){
+			if(!clientMap.get(clientID).info){
 				console.log("Invalid client session")
 				ScheduleController.eventEmitter.emit("expire_schedule", {email, scheduleID})
 				return
 			}
 			for( const chatID of chatIDs){
-				clients[clientID].sendMessage(chatID, message, {sendSeen: false}).then( result => {
+				clientMap.get(clientID).sendMessage(chatID, message, {sendSeen: false}).then( result => {
 					ScheduleController.eventEmitter.emit("message_sent", {scheduleID, email})
 				})
 			}
@@ -162,18 +168,18 @@ export async function sendScheduled(clientID, chatIDs, message, scheduleID, emai
 
 export async function sendRecurring(clientID, chatIDs, message, taskID, email){
 	try{
-		if(!clients[clientID]){
+		if(!clientMap.has(clientID)){
 			console.log("invalid client")
 			TaskController.eventEmitter.emit("expire_schedule", {email, taskID})
 			return
 		}
-		if(clients[clientID]){
-			if(!clients[clientID].info){
+		if(clientMap.has(clientID)){
+			if(!clientMap.get(clientID).info){
 				console.log("Invalid client session")
 				return
 			}
 			for( const chatID of chatIDs){
-				clients[clientID].sendMessage(chatID, message, {sendSeen: false}).then( result => {
+				clientMap.get(clientID).sendMessage(chatID, message, {sendSeen: false}).then( result => {
 					TaskController.eventEmitter.emit("message_sent", {email, taskID})
 				})
 			}
@@ -188,17 +194,19 @@ export async function disconnectClient(req, res){
 	try{
 		const email = req.query.email;
 		const clientID = email.split(alphaRegex).join("")
-		if(clients[clientID]){
+		if(clientMap.has(clientID)){
 			console.log("ID is valid")
-			if(clients[clientID].info){
+
+			if(clientMap.get(clientID).info){
 				console.log("Client is running")
-				clients[clientID].destroy().then(() => {
+				clientMap.get(clientID).destroy().then(() => {
+
 					res.status(200).json({
 						message: "Client disconnected successfully",
 						data: {},
 						code: "200-disconnectClient"
 					})
-					clients[clientID] = undefined	//Set client to undefined to bypass initialization guard
+					clientMap.delete(clientID)	//Set client to undefined to bypass initialization guard
 				}).catch( error => console.log(error))
 			}
 		}
@@ -217,4 +225,4 @@ export async function disconnectClient(req, res){
 
 
 // const testClient = new Client()
-// testClient.destroy()
+// testClient.on('ready')

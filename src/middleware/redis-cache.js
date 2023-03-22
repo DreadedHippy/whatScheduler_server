@@ -69,6 +69,9 @@ export async function cacheData(key, value, validity = 180){
 	}
 }
 
+/**
+* @param {string} email - The email of the user
+*/
 export async function deleteCachedData(email){
 	const key1 = email+"-chats";
 	const key2 = email+"-schedules"
@@ -89,8 +92,8 @@ export async function cachedTasks(req, res, next){
 
 		if(cachedData){
 			res.status(200).json({
-				message: "Chats retrieved",
-				data: {chats: JSON.parse(cachedData)},
+				message: "Tasks retrieved",
+				data: {tasks: JSON.parse(cachedData)},
 				code: "200-getClientTasks"
 			})
 			return

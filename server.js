@@ -26,7 +26,7 @@ eventEmitter.on("db_connected", () => {
 
 io.on('connection', (socket) => {
   socket.on("connect_client", () => {
-    console.log("Angular frontend connected")
+    // console.log("Angular frontend connected")
   })
   console.log('a user connected');
 
