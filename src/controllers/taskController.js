@@ -16,7 +16,7 @@ export async function createTask(req, res){
 		const chatIDs = req.body.chatIDs;
 		const clientID = email.split(alphaRegex).join("")
 		const task = { email, name, message, cronJob, chatIDs, clientID, isRunning: true}
-		console.log(task);
+		// console.log(task); //Debugging
 
 		
 		const user = await User.findOne({email: email})
@@ -42,9 +42,6 @@ export async function createTask(req, res){
 				code: "200-createTask"
 			})
 		})
-
-
-		// user.tasks.create()
 
 	} catch(error){
 		console.log(error)
@@ -78,25 +75,12 @@ export async function getTasks(req, res){
 
 export async function stopTask(req, res){
 	const email = req.body.email
-	const action = req.body.action
 	const taskID = req.params.id
 
-	// console.log(email, action, taskID)
-	let isRunning;
-	switch(action){
-		case 'stop'	:
-			isRunning = false;
-			break;
-		case 'start':
-			isRunning = true;
-			break;
-		default:
-			isRunning = false;
-	}
 	try{
 		User.findOneAndUpdate(
 			{email, "tasks._id": taskID},
-			{"tasks.$.isRunning": isRunning}
+			{"tasks.$.isRunning": false}
 		).then( result => {
 			res.status(200).json({
 				message: "Task stopped",
@@ -114,6 +98,50 @@ export async function stopTask(req, res){
 			message: "An error occurred",
 			data: {stopped: false},
 			code: "500-stopTask"
+		})
+	}
+}
+
+export async function resumeTask(req, res){
+	try{
+		const email = req.body.email
+		const taskID = req.params.id
+
+		//* Find the task and return the task as the fist element in the "tasks" array
+		User.findOne({email, "tasks._id": taskID}, "tasks.$").then(result => {
+			const task = result.tasks[0] //Get the task object
+			const isResumed = resumeJob(email, task) //Attempt to resume the task
+			if(isResumed){ //On successful resumption
+
+				//Update the database
+				User.findOneAndUpdate(
+					{email, "tasks._id": taskID},
+					{"tasks.$.isRunning": true}
+				).then( result => { //On successful update, return a response
+					res.status(200).json({
+						message: "Task resumed",
+						data: {resumed: true},
+						code: "200-resumeTask"
+					})	
+				}).catch(error => { //Catch any errors that may occur
+					console.log(error)
+				})
+				return
+			}
+
+			//If the task could not be resumed, return a response
+			throw new Error("Task could not be resumed")
+
+		}).catch(error => {
+			throw error
+		})
+
+	} catch(error){
+		console.log("Error resuming task: ", error)
+		res.status(500).json({
+			message: "An error occurred",
+			data: {resumed: false},
+			code: "500-resumeTask"
 		})
 	}
 }
@@ -147,10 +175,45 @@ function saveToMap(email, taskID, taskBody){
  * @todo Add a check to see if the task exists before cancelling it
 **/
 function cancelJob(email, taskID){
-	if(taskMap.has(email)){
-		taskMap.get(email)[taskID].cancel()
-		return
+	try{
+
+		if(taskMap.has(email)){
+			taskMap.get(email)[taskID].cancel()
+			return
+		}
+	}catch(error){
+		console.log("An error occurred whilst cancelling a job", error)
 	}
 }
 
+function resumeJob(email, task){
+	try{
+
+		const taskID = task._id
+		if(taskMap.has(email)){
+			if(taskMap.get(email)[taskID]){
+				const isRescheduled = taskMap.get(email)[taskID].reschedule(task.cronJob)
+				return isRescheduled
+			}
+		}
+		saveToMap(email, taskID, nodeSchedule.scheduleJob(task.cronJob, function(){
+			eventEmitter.emit("send_message", {
+				chatIDs: task.chatIDs,
+				clientID: task.clientID,
+				message: task.message,
+				taskID: task._id,
+				email
+			})
+		}))
+		return true
+	} catch(error){
+		console.log("An error occurred while resuming task: ", error)
+		return false
+	}
+	
+}
+
+//?Sample job for autocomplete
+// const job = nodeSchedule.scheduleJob(task.cronJob, function(){ return "Hi"})
+// job.reschedule()
 export {eventEmitter}

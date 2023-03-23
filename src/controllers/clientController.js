@@ -65,7 +65,7 @@ export async function getClientChats(req, res){
 				data: {chats: result},
 				code: "200-getClientChats"
 			})
-			cacheData(email+"-chats", result, 1200)
+			cacheData(email+"-chats", result, 300)
 		})
 	} catch(error){
 		console.log(error)

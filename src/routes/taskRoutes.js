@@ -8,6 +8,7 @@ const router = express.Router();
 // router.get("/", checkAuth, cachedSchedules, ScheduleController.getSchedules)
 router.post("/create", checkAuth, TaskController.createTask)
 router.get("/", checkAuth, TaskController.getTasks)
-router.patch("/:id", checkAuth, TaskController.stopTask)
+router.patch("/:id/stop", checkAuth, TaskController.stopTask)
+router.patch("/:id/resume", checkAuth, TaskController.resumeTask)
 
 export default router
