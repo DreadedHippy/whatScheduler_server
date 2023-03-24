@@ -146,6 +146,42 @@ export async function resumeTask(req, res){
 	}
 }
 
+export async function deleteTask(req, res){
+	try{
+
+		const email = req.query.email
+		const taskID = req.params.id
+		const isJobDeleted = deleteJob(email, taskID);
+
+		if(!isJobDeleted){
+			throw new Error("Job could not be deleted")
+		}
+		
+
+		User.findOne({email: email}).then( (user) => {
+			user.tasks.id(taskID).remove()
+			user.save(function(err){
+				if(err){
+					throw new Error("MongoDB: Job could not be deleted")
+				}
+				
+				res.status(200).json({
+					message: "Task deleted",
+					data: {deleted: true},
+					code: "200-deleteTask"
+				})
+			})
+		})
+	} catch(err){
+		console.log(err)
+		res.status(500).json({
+			message: "An error occurred",
+			data: {deleted: false, error: err},
+			code: "500-deleteTask"
+		})
+	}
+}
+
 /**
  * @param {String} email - the email of the user whose task is to be saved
  * @param {string} taskID - the ID of the task to be saved
@@ -211,6 +247,22 @@ function resumeJob(email, task){
 		return false
 	}
 	
+}
+
+function deleteJob(email, taskID){
+	try{
+		if(!taskMap.has(email)){
+			return true
+		}
+
+		taskMap.get(email)[taskID].cancel()
+		delete taskMap.get(email)[taskID]
+		return true
+
+	} catch(error){
+		console.log("An error occurred whilst deleting a job", error)
+		return false
+	}
 }
 
 //?Sample job for autocomplete

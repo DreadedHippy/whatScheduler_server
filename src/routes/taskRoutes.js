@@ -10,5 +10,6 @@ router.post("/create", checkAuth, TaskController.createTask)
 router.get("/", checkAuth, TaskController.getTasks)
 router.patch("/:id/stop", checkAuth, TaskController.stopTask)
 router.patch("/:id/resume", checkAuth, TaskController.resumeTask)
+router.delete("/:id/delete", checkAuth, TaskController.deleteTask)
 
 export default router
