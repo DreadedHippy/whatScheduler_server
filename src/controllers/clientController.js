@@ -42,7 +42,6 @@ export function connectSocket(io){
 
 			clientMap.get(clientID).on("authenticated", (session) => {
 				socket.emit("authenticated")
-				console.log("CLIENT_CONTROLLER: Client authenticated")
 			})
 		
 			clientMap.get(clientID).on("ready", () => {
@@ -166,6 +165,15 @@ export async function sendScheduled(clientID, chatIDs, message, scheduleID, emai
 	}
 }
 
+/**
+ * @description Sends a message to a list of chats
+ * @param {string} clientID - The client ID
+ * @param {string[]} chatIDs - The chat IDs
+ * @param {string} message - The message to be sent
+ * @param {string} taskID - The ID of the recurring task
+ * @param {string} email - The email of the user
+ * @returns {void}
+*/
 export async function sendRecurring(clientID, chatIDs, message, taskID, email){
 	try{
 		if(!clientMap.has(clientID)){
@@ -189,6 +197,12 @@ export async function sendRecurring(clientID, chatIDs, message, taskID, email){
 	}	
 }
 
+/**
+ * @description Disconnects client from WhatsApp Web
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @returns {Object} - Returns a JSON object
+*/
 
 export async function disconnectClient(req, res){
 	try{
@@ -218,11 +232,11 @@ export async function disconnectClient(req, res){
 			data: {},
 			code: "500-disconnectClient"
 		})
-	}	
+	}
 
 }
 
 
 
 // const testClient = new Client()
-// testClient.on('ready')
+// testClient.initialize()
