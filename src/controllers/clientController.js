@@ -140,6 +140,16 @@ TaskController.eventEmitter.on("send_message", (info) => {
 	sendRecurring(info.clientID, info.chatIDs, info.message, info.taskID, info.email)
 })
 
+/**
+ * 
+ * @param {string} clientID 
+ * @param {string[]} chatIDs The IDs of the chats to send the message to
+ * @param {string} message The message to be sent
+ * @param {string} scheduleID The ID of the scheduled message
+ * @param {string} email The email of the user who scheduled the message(used for logging purposes)
+ * @returns {void}
+ */
+
 export async function sendScheduled(clientID, chatIDs, message, scheduleID, email){
 	try{
 		if(!clientMap.has(clientID)){
