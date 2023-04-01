@@ -15,19 +15,34 @@ const value = await redisClient.get('key');
 console.log(value)
 
 export async function cachedSchedules(req, res, next){
-	try{
+	try{		
+		const limit = +req.query.limit; //Limit of schedules per page
+		const page = +req.query.page; //Current page
 		const token = req.headers.authorization.split(" ")[1]
 		const decodedToken = jwt.decode(token, {
 			complete: true
 		})
 		const payloadEmail = decodedToken.payload.email;
-
-		const cachedData = await redisClient.get(payloadEmail+"-schedules")
+		const startPosition = (page - 1) * limit; //Start position of schedules to be retrieved
+		const endPosition = (page * limit); //End position of schedules to be retrieved
+		const cachedData = await redisClient.get(payloadEmail+"-schedules") //Get schedules from redis
+		let schedules = JSON.parse(cachedData) //Parse schedules from redis
+		schedules.reverse() //Reverse schedules
+		schedules = schedules.slice(startPosition, endPosition); //Get schedules from start to end position
+		schedules.reverse(); //Reverse schedules back to original order
 
 		if(cachedData){
 			res.status(200).json({
 				message: "Schedules retrieved",
-				data: {schedules: JSON.parse(cachedData)},
+				data: {
+					beforePreviousPage: (page - 2) > 0 ? (page - 2) : 0,
+					previousPage: page - 1,
+					currentPage: page,
+					nextPage: user.schedules.length > endPosition ? (page + 1) : 0,
+					afterNextPage: user.schedules.length > endPosition + limit ? (page + 2) : 0,
+					finalPage: Math.ceil(user.schedules.length / limit),
+					schedules
+				},
 				code: "200-getSchedules"
 			})
 			return

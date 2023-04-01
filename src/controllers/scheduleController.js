@@ -5,7 +5,7 @@ import EventEmitter from "events";
 import { cacheData } from "../middleware/redis-cache.js";
 const eventEmitter = new EventEmitter();
 
-let schedules = {};
+const scheduleMap = new Map();
 const alphaRegex = /[^A-Za-z0-9]+/; //Regex pattern to find all that is not alphanumeric
 
 export function getSchedules(req, res) {
@@ -31,16 +31,18 @@ export function getSchedules(req, res) {
 				res.status(200).json({
 					message: "Schedules retrieved",
 					data: {
-						beforePreviousPage: (page - 1) > 1 ? (page - 2) : 0,
+						beforePreviousPage: (page - 2) > 0 ? (page - 2) : 0,
 						previousPage: page - 1,
 						currentPage: page,
 						nextPage: user.schedules.length > endPosition ? (page + 1) : 0,
 						afterNextPage: user.schedules.length > endPosition + limit ? (page + 2) : 0,
+						finalPage: Math.ceil(user.schedules.length / limit),
 						schedules
 					},
 					code: "200-getSchedules",
 				});
-				// cacheData(payloadEmail + "-schedules", user.schedules, 60); //Cache to redis
+
+				cacheData(payloadEmail + "-schedules", user.schedules, 20); //Cache to redis
 				checkSchedules(payloadEmail);
 			})
 			.catch((error) => {
@@ -82,7 +84,7 @@ export async function setSchedule(req, res) {
 			const scheduleID = newSchedule._id; //? Get the id of the new schedule
 
 			//Add the new schedule to the "schedules" object using the user email and schedule ID as reference
-			schedules[email + "|" + scheduleID] = nodeSchedule.scheduleJob(
+			saveToScheduleMap(email, scheduleID, nodeSchedule.scheduleJob(
 				schedule.date,
 				function () {
 					eventEmitter.emit("send_message", {
@@ -94,8 +96,7 @@ export async function setSchedule(req, res) {
 						email,
 					});
 				}
-			);
-
+			));
 			//add the schedule to the sub-document array in the db
 			foundUser.schedules.push(newSchedule);
 
@@ -132,7 +133,7 @@ export function retrieveSchedules(email) {
 						schedule.status = "expired";
 						continue;
 					}
-					schedules[email + "|" + schedule._id] ||= nodeSchedule.scheduleJob(
+					saveToScheduleMap(email, schedule._id, nodeSchedule.scheduleJob(
 						schedule.date,
 						function () {
 							eventEmitter.emit("send_message", {
@@ -144,12 +145,11 @@ export function retrieveSchedules(email) {
 								email: email,
 							});
 						}
-					);
+					));
 				}
+				scheduleMap.set(email, {}) //? This is a placeholder to prevent triggering the "retrieveSchedules" function
 			}
-			schedules[email] ||= email; //?To bypass "checkSchedules" even when no pending schedules
 			foundUser.save().then(() => {
-				console.log("Schedules updated and retrieved");
 				// console.log(schedules) //Debug
 				// console.log(Object.keys(schedules)) //Debug
 			});
@@ -161,10 +161,20 @@ export function retrieveSchedules(email) {
 
 //This checks if the schedules for a given user has been retrieved from th db
 function checkSchedules(email) {
-	const scheduleRefs = Object.keys(schedules);
-	if (!scheduleRefs.some((elem) => elem.startsWith(email))) {
+	if (!scheduleMap.has(email)) {
+		console.log("Retrieving schedules");
+		console.log(scheduleMap)
 		retrieveSchedules(email);
 	}
+}
+
+function saveToScheduleMap(email, scheduleID, scheduleBody) {
+	if(scheduleMap.has(email)){
+		scheduleMap.get(email)[scheduleID] = scheduleBody;
+		return;
+	}
+	//*scheduleID is wrapped in square brackets to reference it to the "taskID" variable
+	scheduleMap.set(email, {[scheduleID]: scheduleBody});
 }
 
 eventEmitter.on("message_sent", async (info) => {
@@ -186,6 +196,7 @@ eventEmitter.on("message_sent", async (info) => {
 });
 
 eventEmitter.on("expire_schedule", (info) => {
+	//Update schedule state to 'expired' in the db
 	try {
 		User.findOneAndUpdate(
 			{ email: info.email, "schedules._id": info.scheduleID },
