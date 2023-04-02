@@ -73,6 +73,13 @@ export async function cachedChats(req, res, next){
 	}
 }
 
+
+/**
+ * 
+ * @param {string} key Key to store the cache value
+ * @param {string} value Value of the cache
+ * @param {number} validity Amount of time cache is validity
+ */
 export async function cacheData(key, value, validity = 180){
 	try{
 		await redisClient.set(key, JSON.stringify(value), {
