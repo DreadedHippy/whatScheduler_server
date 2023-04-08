@@ -14,6 +14,7 @@ await redisClient.set('key', 'value');
 const value = await redisClient.get('key');
 console.log(value)
 
+//Middleware function to check for cached schedules
 export async function cachedSchedules(req, res, next){
 	try{		
 		const limit = +req.query.limit; //Limit of schedules per page
@@ -53,6 +54,7 @@ export async function cachedSchedules(req, res, next){
 	}
 }
 
+//Middleware function to check for cached chats
 export async function cachedChats(req, res, next){
 	try{
 		const email = req.query.email;
@@ -107,6 +109,7 @@ export async function deleteCachedData(email){
 	}
 }
 
+//Middleware function to check for cached tasks
 export async function cachedTasks(req, res, next){
 	try{
 		const email = req.query.email;
