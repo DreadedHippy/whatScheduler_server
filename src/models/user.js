@@ -20,6 +20,8 @@ const schedule = new mongoose.Schema({
 const user = new mongoose.Schema({
 	email: {type: String, required: true, unique: true},
 	password: {type: String, required: true, unique: true},
+	verificationToken: {type: String},
+	isVerified: {type: Boolean, default: false},
 	schedules: [schedule],
 	tasks: [task],
 })

@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';;
 import User from '../models/user.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import * as Mailer from '../utils/mailer.js'
 import * as ScheduleController from '../controllers/scheduleController.js'
 dotenv.config()
 
@@ -78,4 +79,53 @@ export async function login(req, res, next){
 
 		})
 	})
+}
+
+export async function signup(req, res){
+	try {
+		const protocol = req.protocol
+		const host = req.headers.host
+		const email = req.body.email
+		const foundUser = await User.findOne({email})
+		if(foundUser){
+			throw new Error("User already exists")
+		}
+		const hash = await bcrypt.hash(req.body.password, 10)
+		const token = jwt.sign({email}, process.env.VERIFICATION_HASH, {expiresIn: '1h'})
+		const verificationToken = token.toString().slice(0, 15)
+		const user = new User({
+			email,
+			password: hash,
+			tasks: [],
+			schedules: [],
+			verificationToken
+		})
+		await user.save()
+		const verificationLink = `${protocol}://${host}/verify?token=${verificationToken}`
+		await Mailer.sendVerificationMail(email, verificationLink)
+		res.status(201).json({
+			message: "User Created! Please verify with email link",
+			data: {
+				saved: true,
+				user,
+			},
+			code: "201-login"
+		})
+	}
+	catch(err){
+		console.log("An error has occurred: ",err)
+		if(err.message === "User already exists"){
+			res.status(409).json({
+				message: err.message,
+				data: {},
+				code: "409-signup"
+			})
+			return
+		}
+		res.status(500).json({
+			message: err.message,
+			data: {},
+			code: "500-signup"
+		})
+	}
 }
