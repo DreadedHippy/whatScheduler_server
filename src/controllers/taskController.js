@@ -14,7 +14,7 @@ export async function createTask(req, res){
 		const message = req.body.message;
 		const cronJob = req.body.cronJob;
 		const chatIDs = req.body.chatIDs;
-		const clientID = email.split(alphaRegex).join("")
+		const clientID = email.split(alphaRegex).join("_")
 		const task = { email, name, message, cronJob, chatIDs, clientID, isRunning: true}
 		// console.log(task); //Debugging
 
@@ -212,7 +212,6 @@ function saveToMap(email, taskID, taskBody){
 **/
 function cancelJob(email, taskID){
 	try{
-
 		if(taskMap.has(email)){
 			taskMap.get(email)[taskID].cancel()
 			return
@@ -263,6 +262,19 @@ function deleteJob(email, taskID){
 		console.log("An error occurred whilst deleting a job", error)
 		return false
 	}
+}
+
+export function clearTasks(email){
+	return new Promise((resolve, reject) => {
+		try {			
+			if(taskMap.has(email)){			
+				taskMap.delete(email)
+			}
+			resolve(true)
+		}catch(error){
+			reject(false)
+		}
+	})
 }
 
 //?Sample job for autocomplete

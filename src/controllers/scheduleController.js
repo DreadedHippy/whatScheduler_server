@@ -64,7 +64,7 @@ export function getSchedules(req, res) {
 export async function setSchedule(req, res) {
 	try {
 		const email = req.query.email;
-		const clientID = email.split(alphaRegex).join("");
+		const clientID = email.split(alphaRegex).join("_");
 		const chatIDs = req.body.chatIDs;
 		const message = req.body.message;
 		const date = new Date(req.body.date);
@@ -175,6 +175,19 @@ function saveToScheduleMap(email, scheduleID, scheduleBody) {
 	}
 	//*scheduleID is wrapped in square brackets to reference it to the "taskID" variable
 	scheduleMap.set(email, {[scheduleID]: scheduleBody});
+}
+
+export function clearSchedules(email){
+	return new Promise((resolve, reject) => {
+		try {
+			if(scheduleMap.has(email)){
+				scheduleMap.delete(email)
+			}
+			resolve(true)
+		}catch(error){
+			reject(false)
+		}
+	})
 }
 
 eventEmitter.on("message_sent", async (info) => {

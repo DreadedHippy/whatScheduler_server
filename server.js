@@ -35,7 +35,10 @@ io.on('connection', (socket) => {
   })
 });
 
-ClientController.connectSocket(io)
+eventEmitter.on("mongostore_connected", (mongoStore) => {
+  ClientController.connectSocket(io, mongoStore)
+})
+
 
 // eventEmitter.on('db_connected', () => {
 // })

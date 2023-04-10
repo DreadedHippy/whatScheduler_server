@@ -1,62 +1,71 @@
 //importing dependencies
 import wweb from 'whatsapp-web.js'
-import qrcode from 'qrcode-terminal';
 import * as ScheduleController from './scheduleController.js';
 import * as TaskController from './taskController.js';
 import { cacheData, deleteCachedData } from '../middleware/redis-cache.js';
+import { eventEmitter } from '../app.js';
 
-const {Client, LocalAuth} = wweb
-
+const {Client, RemoteAuth} = wweb
 let clients = {};
 let clientMap = new Map()
 const alphaRegex = /[^A-Za-z0-9]+/ //Regex pattern to find all that is not alphanumeric
 
-export function connectSocket(io){
-	io.on('connection', (socket) => {
-		//Connect client function
-		socket.on("connect_client", (id) => {
-			const clientID = id.split(alphaRegex).join("")
+export function connectSocket(io, store){
+	try{
+		io.on('connection', (socket) => {
+			//Connect client function
+			socket.on("connect_client", (id) => {
+				const clientID = id.split(alphaRegex).join("_")
 
-			if(!clientID){
-				socket.emit("invalid_id")
-				return
-			}
+				if(!clientID){
+					socket.emit("invalid_id")
+					return
+				}
 
-			//If the client is a valid client and the client is connected
-			if(clientMap.has(clientID) && clientMap.get(clientID).info){
-				socket.emit("client_ready");
-				return
-			}
-		
-			let client = new Client({
-				authStrategy: new LocalAuth({
-					clientId: clientID
+				//If the client is a valid client and the client is connected
+				if(clientMap.has(clientID) && clientMap.get(clientID).info){
+					socket.emit("client_ready");
+					return
+				}
+			
+				let client = new Client({
+					authStrategy: new RemoteAuth({
+						store: store,
+						clientId: clientID,
+						backupSyncIntervalMs: 300000
+					})
 				})
-			})
 
-			clientMap.set(clientID, client)
-		
-			clientMap.get(clientID).on("qr", qr => {
-				socket.emit("qrcode", qr)
-			})
+				clientMap.set(clientID, client)
+			
+				clientMap.get(clientID).on("qr", qr => {
+					socket.emit("qrcode", qr)
+				})
 
-			clientMap.get(clientID).on("authenticated", (session) => {
-				socket.emit("authenticated")
-			})
-		
-			clientMap.get(clientID).on("ready", () => {
-				socket.emit("client_ready")
-			})
-		 
-			clientMap.get(clientID).initialize()
-		});
-	});
+				clientMap.get(clientID).on("authenticated", (session) => {
+					socket.emit("authenticated")
+				})
+			
+				clientMap.get(clientID).on("remote_session_saved", () => {
+					socket.emit("client_ready")
+				})
+				
+				clientMap.get(clientID).on("ready", () => {
+					socket.emit("client_ready")
+				})
+			
+				clientMap.get(clientID).initialize()
+			});
+		});		
+	}catch(err){
+		console.log(err)
+	}
 }
 
 export async function getClientChats(req, res){
 	try{
 		const email = req.query.email;
-		const clientID = email.split(alphaRegex).join("")
+		const clientID = email.split(alphaRegex).join("_")
 
 		clientMap.get(clientID).getChats().then((result) => {
 			res.status(200).json({
@@ -80,7 +89,7 @@ export async function sendMessage(req, res){
 
 	try{
 		const email = req.query.email
-		const clientID = email.split(alphaRegex).join("")
+		const clientID = email.split(alphaRegex).join("_")
 
 		//If client disconnected for some reason
 		if(!clientMap.has(clientID)){
@@ -216,25 +225,16 @@ export async function sendRecurring(clientID, chatIDs, message, taskID, email){
 
 export async function disconnectClient(req, res){
 	try{
-		const email = req.query.email;
-		const clientID = email.split(alphaRegex).join("")
-		if(clientMap.has(clientID)){
-			console.log("ID is valid")
-
-			if(clientMap.get(clientID).info){
-				console.log("Client is running")
-				clientMap.get(clientID).destroy().then(() => {
-
-					res.status(200).json({
-						message: "Client disconnected successfully",
-						data: {},
-						code: "200-disconnectClient"
-					})
-					clientMap.delete(clientID)	//Set client to undefined to bypass initialization guard
-				}).catch( error => console.log(error))
-			}
-		}
-		deleteCachedData(email)
+		const email = req.query.email
+		clearClient(email).then( result => {
+			res.status(200).json({
+				message: "Client disconnected",
+				data: {disconnected: true},
+				code: "200-disconnectClient"
+			})
+		}).catch( error => {
+			throw new Error(error)
+		})
 	} catch(error){
 		console.log(error)
 		res.status(500).json({
@@ -243,7 +243,30 @@ export async function disconnectClient(req, res){
 			code: "500-disconnectClient"
 		})
 	}
+}
 
+export function clearClient(email){
+	return new Promise((resolve, reject) => {
+		try{
+			const clientID = email.split(alphaRegex).join("_")
+			if(clientMap.has(clientID)){
+				console.log("ID is valid")
+
+				if(clientMap.get(clientID).info){
+					console.log("Client is running")
+					clientMap.get(clientID).destroy().then(() => {
+						resolve(true)
+						clientMap.delete(clientID)	//Set client to undefined to bypass initialization guard
+					}).catch( error => console.log(error))
+				}
+			}
+			deleteCachedData(email)
+		} catch(error){
+			console.log(error)
+			reject(error)
+		}
+	})
+	
 }
 
 

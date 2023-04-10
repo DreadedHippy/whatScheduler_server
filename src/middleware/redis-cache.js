@@ -16,17 +16,21 @@ console.log(value)
 
 //Middleware function to check for cached schedules
 export async function cachedSchedules(req, res, next){
-	try{		
-		const limit = +req.query.limit; //Limit of schedules per page
-		const page = +req.query.page; //Current page
+	try{
 		const token = req.headers.authorization.split(" ")[1]
 		const decodedToken = jwt.decode(token, {
 			complete: true
 		})
 		const payloadEmail = decodedToken.payload.email;
+		const cachedData = await redisClient.get(payloadEmail+"-schedules") //Get schedules from redis
+		if(!cachedData){
+			next()
+			return
+		}
+		const limit = +req.query.limit; //Limit of schedules per page
+		const page = +req.query.page; //Current page
 		const startPosition = (page - 1) * limit; //Start position of schedules to be retrieved
 		const endPosition = (page * limit); //End position of schedules to be retrieved
-		const cachedData = await redisClient.get(payloadEmail+"-schedules") //Get schedules from redis
 		let schedules = JSON.parse(cachedData) //Parse schedules from redis
 		schedules.reverse() //Reverse schedules
 		schedules = schedules.slice(startPosition, endPosition); //Get schedules from start to end position
@@ -39,9 +43,9 @@ export async function cachedSchedules(req, res, next){
 					beforePreviousPage: (page - 2) > 0 ? (page - 2) : 0,
 					previousPage: page - 1,
 					currentPage: page,
-					nextPage: user.schedules.length > endPosition ? (page + 1) : 0,
-					afterNextPage: user.schedules.length > endPosition + limit ? (page + 2) : 0,
-					finalPage: Math.ceil(user.schedules.length / limit),
+					nextPage: schedules.length > endPosition ? (page + 1) : 0,
+					afterNextPage: schedules.length > endPosition + limit ? (page + 2) : 0,
+					finalPage: Math.ceil(schedules.length / limit),
 					schedules
 				},
 				code: "200-getSchedules"

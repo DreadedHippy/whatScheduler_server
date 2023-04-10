@@ -5,7 +5,7 @@ import { cachedSchedules } from '../middleware/redis-cache.js';
 
 const router = express.Router();
 
-router.get("/", checkAuth, ScheduleController.getSchedules)
+router.get("/", checkAuth, cachedSchedules, ScheduleController.getSchedules)
 router.post("/create", checkAuth, ScheduleController.setSchedule)
 
 export default router
