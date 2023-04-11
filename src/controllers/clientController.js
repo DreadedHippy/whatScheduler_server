@@ -245,21 +245,20 @@ export async function disconnectClient(req, res){
 	}
 }
 
-export function clearClient(email){
+export async function clearClient(email){
 	return new Promise((resolve, reject) => {
 		try{
 			const clientID = email.split(alphaRegex).join("_")
 			if(clientMap.has(clientID)){
 				console.log("ID is valid")
-
 				if(clientMap.get(clientID).info){
 					console.log("Client is running")
 					clientMap.get(clientID).destroy().then(() => {
-						resolve(true)
 						clientMap.delete(clientID)	//Set client to undefined to bypass initialization guard
 					}).catch( error => console.log(error))
 				}
 			}
+			resolve(true)
 			deleteCachedData(email)
 		} catch(error){
 			console.log(error)

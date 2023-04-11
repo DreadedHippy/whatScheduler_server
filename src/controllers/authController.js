@@ -9,12 +9,20 @@ import * as ClientController from '../controllers/clientController.js'
 import * as TaskController from '../controllers/taskController.js'
 dotenv.config()
 
-export async function login(req, res, next){
-	try{		
+export async function login(req, res){
+	try{
 		const email = req.body.email
 		const password = req.body.password
 
 		User.findOne({email: email}).then( foundUser => {
+			if(!foundUser){
+				res.status(401).json({
+					message: "Not recognized, try signing up",
+					data: {},
+					code: "401-login"
+				})
+				return
+			}
 			if (!foundUser.isVerified){
 				res.status(401).json({
 					message: "Not verified! Please verify with email link",
@@ -24,7 +32,7 @@ export async function login(req, res, next){
 				return
 			}
 			const token = jwt.sign({email, id: foundUser._id}, process.env.JWT_SECRET, {expiresIn: '1h'}) //generate auth token
-			bcrypt.compare(req.body.password, foundUser.password)
+			bcrypt.compare(password, foundUser.password)
 			.then(passwordMatches => {
 				if(passwordMatches){
 					res.status(200).json({
@@ -47,7 +55,7 @@ export async function login(req, res, next){
 				})
 
 			})
-		})
+		}).catch((err) => { throw new Error(err)	})
 	} catch(err){
 		console.log(err);
 		res.status(500).json({
@@ -155,7 +163,7 @@ export async function verify(req, res){
 				break;
 			default:
 				res.status(500).json({
-					message: "Something went wrong...",
+					message: "Something went wrong... try again later",
 					data: {},
 					code: "500-verify"
 				})
@@ -163,7 +171,7 @@ export async function verify(req, res){
 	}
 }
 
-export async function logout(req, res, next){
+export async function logout(req, res){
 	try {
 		const token = req.headers.authorization.split(" ")[1]
 		const payload = jwt.decode(token, process.env.JWT_SECRET)
