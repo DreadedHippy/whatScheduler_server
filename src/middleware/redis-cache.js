@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 const redisUrl = process.env.REDIS_URL
 
 //Testing out redis
-const redisClient = createClient(redisUrl);
+const redisClient = createClient({url: redisUrl});
 
 redisClient.on('error', err => console.log('Redis Client Error', err));
 
