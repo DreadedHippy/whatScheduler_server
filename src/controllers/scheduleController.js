@@ -162,8 +162,7 @@ export function retrieveSchedules(email) {
 //This checks if the schedules for a given user has been retrieved from th db
 function checkSchedules(email) {
 	if (!scheduleMap.has(email)) {
-		console.log("Retrieving schedules");
-		console.log(scheduleMap)
+		// console.log("Retrieving schedules"); //Debug
 		retrieveSchedules(email);
 	}
 }

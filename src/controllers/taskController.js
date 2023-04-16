@@ -34,14 +34,14 @@ export async function createTask(req, res){
 			})
 		}))
 
-		user.tasks.push(newTask)
-		user.save().then( () => {
-			res.status(200).json({
-				message: "Recurring message created",
-				data: {created: true},
-				code: "200-createTask"
-			})
+		await user.tasks.push(newTask)
+		const savedUser = await user.save()
+		res.status(200).json({
+			message: "Recurring message created",
+			data: {created: true},
+			code: "200-createTask"
 		})
+		cacheData(email + "-tasks", savedUser.tasks, 240); //Cache to redis
 
 	} catch(error){
 		console.log(error)
@@ -56,13 +56,13 @@ export async function createTask(req, res){
 export async function getTasks(req, res){
 	const email = req.query.email
 	try{
-		User.findOne({email: email}).then( (foundUser) => {
-			res.status(200).json({
-				message: "Tasks found",
-				data: {tasks: foundUser.tasks},
-				code: "200-getTasks"
-			})
+		const foundUser = await User.findOne({email: email})
+		res.status(200).json({
+			message: "Tasks found",
+			data: {tasks: foundUser.tasks},
+			code: "200-getTasks"
 		})
+		cacheData(foundUser.email + "-tasks", foundUser.tasks, 240); //Cache to redis
 	} catch(error){
 		console.log("Error finding tasks: ", error)
 		res.status(500).json({
@@ -80,14 +80,16 @@ export async function stopTask(req, res){
 	try{
 		User.findOneAndUpdate(
 			{email, "tasks._id": taskID},
-			{"tasks.$.isRunning": false}
+			{"tasks.$.isRunning": false},
+			{	new: true}
 		).then( result => {
+			cancelJob(email, taskID)
 			res.status(200).json({
 				message: "Task stopped",
 				data: {stopped: true},
 				code: "200-stopTask"
 			})
-			cancelJob(email, taskID)
+			cacheData(email + "-tasks", result.tasks, 240); //Cache to redis
 
 		}).catch(error => {
 			console.log(error)
@@ -116,13 +118,16 @@ export async function resumeTask(req, res){
 				//Update the database
 				User.findOneAndUpdate(
 					{email, "tasks._id": taskID},
-					{"tasks.$.isRunning": true}
+					{"tasks.$.isRunning": true},
+					{	new: true}
 				).then( result => { //On successful update, return a response
 					res.status(200).json({
 						message: "Task resumed",
 						data: {resumed: true},
 						code: "200-resumeTask"
-					})	
+					})
+					cacheData(email + "-tasks", result.tasks, 240); //Cache to redis		
+
 				}).catch(error => { //Catch any errors that may occur
 					console.log(error)
 				})
@@ -265,11 +270,17 @@ function deleteJob(email, taskID){
 }
 
 export function clearTasks(email){
-	return new Promise((resolve, reject) => {
-		try {			
-			if(taskMap.has(email)){			
+	return new Promise(async (resolve, reject) => {
+		try {
+			if(taskMap.has(email)){
+				const taskIDs = Object.keys(taskMap.get(email))
+				for(const taskID of taskIDs){
+					deleteJob(email, taskID)
+				}
+				console.log(taskMap.get(email))
 				taskMap.delete(email)
 			}
+			await User.findOneAndUpdate({email}, {'tasks.$[].isRunning': false})
 			resolve(true)
 		}catch(error){
 			reject(false)

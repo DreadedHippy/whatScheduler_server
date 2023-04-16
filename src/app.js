@@ -50,36 +50,4 @@ app.get("/", (req, res) => {
     res.sendFile(__dirname + '/index.html');
 })
 
-
-async function storeSession(req, res){
-    console.log("Pinged")
-    let id = req.query.id
-
-    if(!clients[id]){
-        clients[id] = new Client({
-            authStrategy: new LocalAuth({
-                clientId: `client_${id}`
-            })
-        });
-    }
-
-    clients[id].on("qr", qr => {
-        qrcode.generate(qr, {small: true})
-    })
-
-    clients[id].on("remote_session_saved", () => {        
-        res.status(200).json({
-            message: "Session saved"
-        })
-    })
-
-    clients[id].on("ready", () => {
-        console.log("Client Ready!")
-    })
-
-    clients[id].initialize();
-
-    console.log(clients)
-}
-
 export {app as default, eventEmitter};

@@ -3,6 +3,7 @@ import wweb from 'whatsapp-web.js'
 import * as ScheduleController from './scheduleController.js';
 import * as TaskController from './taskController.js';
 import { cacheData, deleteCachedData } from '../middleware/redis-cache.js';
+import jwt from 'jsonwebtoken';
 import { eventEmitter } from '../app.js';
 
 const {Client, RemoteAuth} = wweb
@@ -32,8 +33,11 @@ export function connectSocket(io, store){
 					authStrategy: new RemoteAuth({
 						store: store,
 						clientId: clientID,
-						backupSyncIntervalMs: 300000
-					})
+						backupSyncIntervalMs: 300000,
+					}),
+					puppeteer: {
+						args: ["--no-sandbox"]
+					}
 				})
 
 				clientMap.set(clientID, client)
@@ -51,7 +55,9 @@ export function connectSocket(io, store){
 				})
 				
 				clientMap.get(clientID).on("ready", () => {
-					socket.emit("client_ready")
+					if(store.sessionExists(clientID)){						
+						socket.emit("client_ready")
+					}
 				})
 			
 				clientMap.get(clientID).initialize()
@@ -63,8 +69,10 @@ export function connectSocket(io, store){
 }
 
 export async function getClientChats(req, res){
-	try{
-		const email = req.query.email;
+	try{		
+    const token = req.headers.authorization.split(" ")[1]
+    const decoded = jwt.decode(token, process.env.JWT_SECRET)
+		const email = decoded.email;
 		const clientID = email.split(alphaRegex).join("_")
 
 		clientMap.get(clientID).getChats().then((result) => {
@@ -74,6 +82,13 @@ export async function getClientChats(req, res){
 				code: "200-getClientChats"
 			})
 			cacheData(email+"-chats", result, 300)
+		}).catch( err => {
+			console.log(err)
+			res.status(500).json({
+				message: "An error occurred, try reconnecting",
+				data: {},
+				code: "500-getClientChats"
+			})
 		})
 	} catch(error){
 		console.log(error)
@@ -270,5 +285,14 @@ export async function clearClient(email){
 
 
 
-// const testClient = new Client()
+// const testClient = new Client({
+// 	authStrategy: new RemoteAuth({
+		
+// 	}),
+// 	puppeteer: {
+
+// 	}
+// })
 // testClient.initialize() //Test client for vscode intellisense
+
+

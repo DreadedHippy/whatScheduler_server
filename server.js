@@ -15,7 +15,7 @@ const io = new Server(server, {
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 eventEmitter.on("db_connected", () => {
   server.listen(PORT, () => {

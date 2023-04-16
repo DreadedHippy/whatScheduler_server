@@ -18,5 +18,7 @@
 		"titleBar.inactiveBackground": "#2f7b4899",
 		"titleBar.inactiveForeground": "#e7e7e799"
 	},
-	"peacock.color": "#2f7b48"
+	"peacock.color": "#2f7b48",
+	"appService.defaultWebAppToDeploy": "/subscriptions/a172baea-655d-46ed-8ac5-693ce03da026/resourceGroups/whatScheduler-rg/providers/Microsoft.Web/sites/whatScheduler-backend",
+	"appService.deploySubpath": "."
 }

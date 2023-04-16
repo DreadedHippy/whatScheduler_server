@@ -90,7 +90,7 @@ export async function cacheData(key, value, validity = 180){
 	try{
 		await redisClient.set(key, JSON.stringify(value), {
 			EX: validity,
-			NX: true
+			NX: key.endsWith("-tasks") ? false : true
 		})
 	}catch(error){
 		console.log("Redis cache error", error)
