@@ -1,4 +1,6 @@
 # WhatScheduler by **Aizon**
+#### [ChangeLogs](CHANGELOG.md)
+#### [Contributors](CONTRIBUTORS.md)
 
 <p align="center">	
   <a href="https://visitor-badge.glitch.me/badge?page_id=DreadedHippy.whatScheduler_server"> <img alt="Repo view count" src="https://visitor-badge.glitch.me/badge?page_id=DreadedHippy.whatScheduler_server"></a>
