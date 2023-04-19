@@ -4,8 +4,8 @@
   <a href="https://visitor-badge.glitch.me/badge?page_id=DreadedHippy.whatScheduler_server"> <img alt="Repo view count" src="https://visitor-badge.glitch.me/badge?page_id=DreadedHippy.whatScheduler_server"></a>
 </p>
 
-![GitHub last commit](https://img.shields.io/github/last-commit/DreadedHippy/WhatScheduler_backend?color=%23ffbb00&logo=Github&logoColor=%23ffbb00&style=for-the-badge)
-![GitHub package.json version](https://img.shields.io/github/package-json/v/DreadedHippy/WhatScheduler_backend?color=%23ffbb00&logo=Github&logoColor=%23ffdd00&style=for-the-badge)
+![GitHub last commit](https://img.shields.io/github/last-commit/DreadedHippy/whatScheduler_server?color=%23ffbb00&logo=Github&logoColor=%23ff&style=for-the-badge)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/DreadedHippy/whatScheduler_server?color=%23ff9548&logo=Github&logoColor=%23ffdd00&style=for-the-badge)
 
 <p>
 	WhatScheduler is an open-source software designed by me, Onotieose Izormen. It started out as a hobby project to aid with performing repetitive tasks on whatsapp but is now a Web application which anyone can use to schedule WhatsApp messages. It was first released on April 19th 2023.
