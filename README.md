@@ -1,7 +1,7 @@
 # WhatScheduler by **Aizon**
 
 <p align="center">	
-  <a href="https://visitor-badge.glitch.me/badge?page_id=DreadedHippy.DreadedHippy"> <img alt="DreadedHippy profile views" src="https://visitor-badge.glitch.me/badge?page_id=DreadedHippy.DreadedHippy"></a>
+  <a href="https://visitor-badge.glitch.me/badge?page_id=DreadedHippy.whatScheduler_server"> <img alt="Repo view count" src="https://visitor-badge.glitch.me/badge?page_id=DreadedHippy.whatScheduler_server"></a>
 </p>
 
 ![GitHub last commit](https://img.shields.io/github/last-commit/DreadedHippy/WhatScheduler_backend?color=%23ffbb00&logo=Github&logoColor=%23ffbb00&style=for-the-badge)
