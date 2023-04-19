@@ -35,7 +35,7 @@
 
 ## How can I support the developer?
 <p>
-	Why thank you for asking :D, you can support me by clicking the link <a href="usepayday.me/onotieose-izormen9903">Here</a>
+	Why thank you for asking :D, you can support me by clicking the link <a href="https://usepayday.me/izormenonotieose9903">Here</a>
 </p>
 
 *Be sure to star the repo on github! :D*
