@@ -1,4 +1,4 @@
-echo "Hello World"
+echo "Deploying backend..."
 
 set -o allexport
 source .env set
@@ -7,6 +7,7 @@ docker build -t $DOCKER_IMAGE_NAME .
 
 if [ $? -eq 0 ]; then
   echo "Image built successfully"
+	echo "Pushing to cloud..."
 	docker push $DOCKER_IMAGE_NAME
 
 	if [ $? -eq 0 ]; then
