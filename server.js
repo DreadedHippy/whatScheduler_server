@@ -19,7 +19,7 @@ const PORT = process.env.PORT || 8080;
 
 eventEmitter.on("db_connected", () => {
   server.listen(PORT, () => {
-    console.log('listening on *:3000');
+    console.log(`listening on *:${PORT}`);
   });
 })
 
