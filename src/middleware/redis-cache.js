@@ -3,14 +3,13 @@ import { createClient } from 'redis';
 import jwt from 'jsonwebtoken'
 const redisUrl = process.env.REDIS_URL
 
-//Testing out redis
 const redisClient = createClient({url: redisUrl});
 
 redisClient.on('error', err => console.log('Redis Client Error', err));
 
 await redisClient.connect();
 
-await redisClient.set('key', 'value');
+await redisClient.set('key', 'Redis Connected');
 const value = await redisClient.get('key');
 console.log(value)
 

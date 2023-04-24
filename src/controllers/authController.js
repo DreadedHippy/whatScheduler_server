@@ -3,10 +3,10 @@ import bcrypt from 'bcrypt';;
 import User from '../models/user.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import * as Mailer from '../utils/mailer.js'
-import * as ScheduleController from '../controllers/scheduleController.js'
-import * as ClientController from '../controllers/clientController.js'
-import * as TaskController from '../controllers/taskController.js'
+import * as Mailer from '../utils/mailer.js';
+import * as ScheduleController from '../controllers/scheduleController.js';
+import * as ClientController from '../controllers/clientController.js';
+import * as TaskController from '../controllers/taskController.js';
 dotenv.config()
 
 export async function login(req, res){
