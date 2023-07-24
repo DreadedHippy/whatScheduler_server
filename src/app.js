@@ -20,7 +20,6 @@ import taskRoutes from './routes/taskRoutes.js'
 
 //Necessary initializations
 dotenv.config();
-const { Client, RemoteAuth, LocalAuth } = wweb;
 const { MongoStore } = wwebjs_mongo
 const app = express();
 const __filename = fileURLToPath(import.meta.url);

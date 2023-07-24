@@ -1,9 +1,21 @@
 //Dependency imports
 import { createClient } from 'redis';
-import jwt from 'jsonwebtoken'
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 const redisUrl = process.env.REDIS_URL
 
-const redisClient = createClient({url: redisUrl});
+// const nodeClient = createClient({
+//   url: redisUrl,
+//   pingInterval: 1000,
+// })
+// await nodeClient.connect()
+// const omClient = new Client()
+// const redisClient = await omClient.use(nodeClient)
+
+const redisClient = createClient({
+	url: redisUrl
+});
 
 redisClient.on('error', err => console.log('Redis Client Error', err));
 

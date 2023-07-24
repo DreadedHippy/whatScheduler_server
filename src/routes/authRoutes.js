@@ -34,7 +34,9 @@ router.post("/signup",
 
 	AuthController.signup
 );
+
 router.post("/verify", AuthController.verify)
+router.post("/googleAuth", AuthController.googleAuth)
 router.post("/logout", checkAuth, AuthController.logout)
 
 export default router
